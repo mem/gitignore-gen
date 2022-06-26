@@ -3,9 +3,12 @@ package main
 import (
 	"bytes"
 	"flag"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -23,7 +26,7 @@ func main() {
 
 	fs := flag.NewFlagSet("", flag.ExitOnError)
 	fs.StringVar(&config.configFn, "config-filename", ".gitignore.yaml", "configuration filename")
-	fs.StringVar(&config.localDataDir, "local-data-dir", "", "directory containing gitignore data")
+	fs.StringVar(&config.localDataDir, "local-data-dir", ".", "directory containing gitignore data")
 
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		log.Println("E: invalid arguments.")
@@ -50,9 +53,13 @@ func main() {
 	output.WriteString("# FILE GENERATED USING gitignore-gen, DO NOT EDIT\n\n")
 
 	for i, ignoreId := range config.Inputs {
-		ignoreFn := filepath.Join(config.localDataDir, ignoreId)
+		if strings.HasPrefix(ignoreId, "https://") || strings.HasPrefix(ignoreId, "http://") {
+			processURL(&output, ignoreId, i > 0)
+		} else {
+			ignoreFn := filepath.Join(config.localDataDir, ignoreId)
 
-		processFile(&output, ignoreFn, ignoreId, i > 0)
+			processFile(&output, ignoreFn, ignoreId, i > 0)
+		}
 	}
 
 	if _, err := os.Stat(localGitignore); err == nil {
@@ -62,12 +69,27 @@ func main() {
 	os.Stdout.Write(output.Bytes())
 }
 
+func processURL(output *bytes.Buffer, u string, outputSep bool) {
+	resp, err := http.Get(u)
+	if err != nil {
+		log.Fatalf("E: Cannot process URL %q: %s", u, err)
+	}
+
+	defer resp.Body.Close()
+
+	processData(output, u, resp.Body, outputSep)
+}
+
 func processFile(output *bytes.Buffer, fn, id string, outputSep bool) {
 	data, err := os.ReadFile(fn)
 	if err != nil {
 		log.Fatalf("E: Cannot read ignore file %q: %s", fn, err)
 	}
 
+	processData(output, id, bytes.NewBuffer(data), outputSep)
+}
+
+func processData(output *bytes.Buffer, id string, r io.Reader, outputSep bool) {
 	if outputSep {
 		output.WriteRune('\n')
 	}
@@ -75,6 +97,6 @@ func processFile(output *bytes.Buffer, fn, id string, outputSep bool) {
 	output.WriteString("# ")
 	output.WriteString(id)
 	output.WriteRune('\n')
-	output.Write(data)
+	io.Copy(output, r)
 	output.WriteRune('\n')
 }

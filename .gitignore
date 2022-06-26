@@ -1,6 +1,6 @@
 # FILE GENERATED USING gitignore-gen, DO NOT EDIT
 
-# Global/Vim.gitignore
+# https://raw.githubusercontent.com/github/gitignore/main/Global/Vim.gitignore
 # Swap
 [._]*.s[a-v][a-z]
 !*.svg  # comment out if you don't need vector files
@@ -22,7 +22,22 @@ tags
 [._]*.un~
 
 
-# Global/Backup.gitignore
+# https://raw.githubusercontent.com/github/gitignore/main/Global/VisualStudioCode.gitignore
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+
+# https://raw.githubusercontent.com/github/gitignore/main/Global/Backup.gitignore
 *.bak
 *.gho
 *.ori
@@ -30,7 +45,7 @@ tags
 *.tmp
 
 
-# Global/Linux.gitignore
+# https://raw.githubusercontent.com/github/gitignore/main/Global/Linux.gitignore
 *~
 
 # temporary files which can be created if a process still has a handle open of a deleted file
@@ -46,7 +61,7 @@ tags
 .nfs*
 
 
-# Go.gitignore
+# https://raw.githubusercontent.com/github/gitignore/main/Go.gitignore
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
